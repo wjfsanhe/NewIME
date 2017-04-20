@@ -220,12 +220,14 @@ public class InputModeSwitcher {
      * mode to input symbols, and we have a hardware keyboard for the current
      * situation), {@link #mRecentLauageInputMode} will be tried.
      **/
-    private int mPreviousInputMode = MODE_SKB_CHINESE;
+    //private int mPreviousInputMode = MODE_SKB_CHINESE;
+    private int mPreviousInputMode = MODE_SKB_ENGLISH_LOWER;
 
     /**
      * Used to remember recent mode to input language.
      */
-    private int mRecentLauageInputMode = MODE_SKB_CHINESE;
+    //private int mRecentLauageInputMode = MODE_SKB_CHINESE;
+    private int mRecentLauageInputMode = MODE_SKB_ENGLISH_LOWER;
 
     /**
      * Editor information of the current edit box.
