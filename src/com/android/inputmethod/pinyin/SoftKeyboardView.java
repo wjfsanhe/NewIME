@@ -194,8 +194,6 @@ public class SoftKeyboardView extends View {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mFmi = mPaint.getFontMetricsInt();
-        mFocusPoint.x=-1;
-        mFocusPoint.y=-1;
         this.setOnHoverListener(new OnHoverListener() {
             @Override
             public boolean onHover(View v, MotionEvent event) {
@@ -609,22 +607,23 @@ public class SoftKeyboardView extends View {
         mDimSkb = dimSkb;
         invalidate();
     }
-
+    private void resetFocus(){
+            mFocusPoint.x=1;
+            mFocusPoint.y=1;
+            updateFocusAxis();
+    }
     @Override
     protected void onDraw(Canvas canvas) {
         if (null == mSoftKeyboard) return;
 
         if(mFocusPoint.x < 0 ){
-                mFocusPoint.x=1;
-                mFocusPoint.y=1;
+                resetFocus();
         }
 
         KeyRow focusRow = mSoftKeyboard.getKeyRowForDisplay(mFocusPoint.y);
         if(null == focusRow){
                 Log.d(TAG,"update keyboard have null row");
-                mFocusPoint.x=1;
-                mFocusPoint.y=1;
-                updateFocusAxis();
+                resetFocus();
         }
 
         Log.d(TAG,"onDraw to refffresh");

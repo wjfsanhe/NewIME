@@ -236,44 +236,69 @@ public class PinyinIME extends InputMethodService {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-	      Log.d(TAG, "onKeyDown be called," + keyCode + "\n" + event.toString());
+        Log.d(TAG, "onKeyDown be called," + keyCode + "\n" + event.toString());
         if (null != mSkbContainer && mSkbContainer.isShown()) {
-            //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
-            if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBR){
-            } else {
-              mSkbContainer.notifyKeyDown(keyCode,event);
-            }
+           //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
+          if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBR){
+            Log.d(TAG,"simulate KEYCODE_BACK down");
+            //simulateKeyEventDownUp(KeyEvent.KEYCODE_BACK);
+
+            keyCode = KeyEvent.KEYCODE_BACK ;
+            KeyEvent simEvent = new KeyEvent(event.getDownTime(),
+                                                    event.getEventTime(),
+                                                    event.getAction(),
+                                                    keyCode,
+                                                    event.getRepeatCount(),
+                                                    event.getMetaState(),
+                                                    event.getDeviceId(),
+                                                    event.getScanCode(),
+                                                    event.getFlags(),
+                                                    event.getSource());
+
+           return super.onKeyDown(keyCode, simEvent);
+          } else {
+            mSkbContainer.notifyKeyDown(keyCode,event);
+          }
         }
         return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-      	Log.d(TAG, "onKeyUp be called");
-        if (null != mSkbContainer && mSkbContainer.isShown()) {                                           
-            //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
+      Log.d(TAG, "onKeyUp be called");
+      if (null != mSkbContainer && mSkbContainer.isShown()) {
+      //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
             
-            if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBR){
-                Log.d(TAG,"simulate KEYCODE_BACK");
-                SoftKey key = new SoftKey();
-                key.setKeyAttribute(KeyEvent.KEYCODE_BACK,"back",false,false);
-                responseSoftKeyEvent(key);
-                return true;
-                //simulateKeyEventDownUp(KeyEvent.KEYCODE_BACK);
-            } else {
-                mSkbContainer.notifyKeyUp(keyCode,event);                                                             }
-        }
-        return super.onKeyUp(keyCode, event);
+        if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBR){
+          Log.d(TAG,"simulate KEYCODE_BACK up");
+          //simulateKeyEventDownUp(KeyEvent.KEYCODE_BACK);
+
+          keyCode = KeyEvent.KEYCODE_BACK ;
+          KeyEvent simEvent = new KeyEvent(event.getDownTime(),
+                                                 event.getEventTime(),
+                                                 event.getAction(),
+                                                 keyCode,
+                                                 event.getRepeatCount(),
+                                                 event.getMetaState(),
+                                                 event.getDeviceId(),
+                                                 event.getScanCode(),
+                                                 event.getFlags(),
+                                                 event.getSource());
+          return super.onKeyUp(keyCode, simEvent);
+      } else {
+          mSkbContainer.notifyKeyUp(keyCode,event);                                                             }
+      }
+      return super.onKeyUp(keyCode, event);
     }
 
     public boolean softKeyDown(int keyCode, KeyEvent event) {
-	      Log.d(TAG, "SoftKeyDown be called," + keyCode + "\n" + event.toString());
+        Log.d(TAG, "SoftKeyDown be called," + keyCode + "\n" + event.toString());
         if (processKey(event, 0 != event.getRepeatCount())) return true;
         return false;
     }
 
     public boolean softKeyUp(int keyCode, KeyEvent event) {
-	      Log.d(TAG, "SoftKeyUp be called");
+        Log.d(TAG, "SoftKeyUp be called");
         if (processKey(event, true)) return true;
         return false;
     }
