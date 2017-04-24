@@ -237,6 +237,7 @@ public class PinyinIME extends InputMethodService {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyDown be called," + keyCode + "\n" + event.toString());
+
         if (null != mSkbContainer && mSkbContainer.isShown()) {
            //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
           if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBR){
@@ -257,15 +258,17 @@ public class PinyinIME extends InputMethodService {
 
            return super.onKeyDown(keyCode, simEvent);
           } else {
-            mSkbContainer.notifyKeyDown(keyCode,event);
+            return mSkbContainer.notifyKeyDown(keyCode,event);
           }
         }
+        //return true;
         return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
       Log.d(TAG, "onKeyUp be called");
+
       if (null != mSkbContainer && mSkbContainer.isShown()) {
       //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
             
@@ -286,8 +289,9 @@ public class PinyinIME extends InputMethodService {
                                                  event.getSource());
           return super.onKeyUp(keyCode, simEvent);
       } else {
-          mSkbContainer.notifyKeyUp(keyCode,event);                                                             }
+          return mSkbContainer.notifyKeyUp(keyCode,event);                                                             }
       }
+      //return true;
       return super.onKeyUp(keyCode, event);
     }
 

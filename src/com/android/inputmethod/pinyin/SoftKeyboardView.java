@@ -671,16 +671,27 @@ public class SoftKeyboardView extends View {
         Drawable bg;
         int textColor;
         if (mKeyPressed && softKey == mSoftKeyDown) {
-            bg = softKey.getKeyHlBg();
-            textColor = softKey.getColorHl();
+            if ( focusEnable ) {
+                bg = softKey.getKeyHlBg();
+                textColor = 0xffffffff;
+            } else {
+                bg = softKey.getKeyHlBg();
+                textColor = softKey.getColorHl();
+            }
         } else {
-            bg = softKey.getKeyBg();
-            textColor = softKey.getColor();
+            if ( focusEnable ) {
+                bg = softKey.getKeyFocusBg();
+                textColor = 0xffffffff;
+            } else {
+                bg = softKey.getKeyBg();
+                textColor = softKey.getColor();
+            }
+            
         }
-        mPaint.setColor(Color.WHITE); //focus line color 
+        /*mPaint.setColor(Color.WHITE); //focus line color 
         if(focusEnable){
                 canvas.drawRoundRect(new RectF(softKey.mLeft+30, softKey.mTop+20, softKey.mRight-30, softKey.mBottom-30),150,150, mPaint);
-        }
+        }*/
         if (null != bg) {
             bg.setBounds(softKey.mLeft + keyXMargin, softKey.mTop + keyYMargin,
                     softKey.mRight - keyXMargin, softKey.mBottom - keyYMargin);
@@ -710,18 +721,23 @@ public class SoftKeyboardView extends View {
             float y = softKey.mTop + marginY - mFmi.top + mFmi.bottom / 1.5f;
             canvas.drawText(keyLabel, x, y + 1, mPaint);
         }
+        
+        /*mPaint.setColor(Color.WHITE); //focus line color 
+        if(focusEnable){
+                canvas.drawLine(softKey.mLeft + 10, softKey.mBottom - 30 , softKey.mRight - 10, softKey.mBottom - 30, mPaint);
+        }*/
     }
 
     public boolean receiveKeyDown(int keyCode, KeyEvent event) {
                     Log.d(TAG, "onKeyDown be called," + keyCode + "\n" + event.toString());
                     onDPADKey(keyCode);
-                    return false;
+                    return true;
     }
 
     public boolean receiveKeyUp(int keyCode, KeyEvent event) {
                     Log.d(TAG, "onKeyUp be called");
                     //onDPADKey(keyCode);
-                    return false;
+                    return true;
     }
     private void setSoftKeyHl(SoftKey softkey) {
         focusKey = softkey;

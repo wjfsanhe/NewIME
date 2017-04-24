@@ -14,8 +14,8 @@
      limitations under the License.
 -->
 <resources>
-    <color name="label_color">#4c4c4c</color>
-    <color name="label_color_hl0">#4c4c4c</color>
+    <color name="label_color">#acacac</color>
+    <color name="label_color_hl0">#acacac</color>
     <color name="balloon_color">#ff000000</color>
     <color name="candidate_color">#FFFFFF</color>
     <color name="active_candidate_color">#FFFFFF</color>

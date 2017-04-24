@@ -106,8 +106,8 @@ public class SkbTemplate {
         return mYMargin;
     }
 
-    public SoftKeyType createKeyType(int id, Drawable bg, Drawable hlBg) {
-        return new SoftKeyType(id, bg, hlBg);
+    public SoftKeyType createKeyType(int id, Drawable bg, Drawable hlBg,Drawable focusBg) {
+        return new SoftKeyType(id, bg, hlBg,focusBg);
     }
 
     public boolean addKeyType(SoftKeyType keyType) {
@@ -215,14 +215,16 @@ class SoftKeyType {
     public int mKeyTypeId;
     public Drawable mKeyBg;
     public Drawable mKeyHlBg;
+    public Drawable mKeyFocusBg;
     public int mColor;
     public int mColorHl;
     public int mColorBalloon;
 
-    SoftKeyType(int id, Drawable bg, Drawable hlBg) {
+    SoftKeyType(int id, Drawable bg, Drawable hlBg, Drawable focusBg) {
         mKeyTypeId = id;
         mKeyBg = bg;
         mKeyHlBg = hlBg;
+        mKeyFocusBg = focusBg;
     }
 
     public void setColors(int color, int colorHl, int colorBalloon) {

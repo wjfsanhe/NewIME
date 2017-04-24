@@ -124,6 +124,13 @@ public class XmlKeyboardLoader {
      * Defined inside {@link #XMLTAG_KEYTYPE}.
      */
     private static final String XMLATTR_KEYTYPE_HLBG = "hlbg";
+    
+    
+    /**
+     * Attribute tag of the key focus background for a specified key type.
+     * Defined inside {@link #XMLTAG_KEYTYPE}.
+     */
+    private static final String XMLATTR_KEYTYPE_FBG = "fbg";
 
     /**
      * Attribute tag of the starting x-position of an element. It can be defined
@@ -377,11 +384,15 @@ public class XmlKeyboardLoader {
                                 globalColorHl);
                         int colorBalloon = getColor(xrp, XMLATTR_COLOR_BALLOON,
                                 globalColorBalloon);
+
+                        Drawable focusBg = getDrawable(xrp, XMLATTR_KEYTYPE_FBG,
+                                null);
+
                         if (id != lastKeyTypeId + 1) {
                             return null;
                         }
                         SoftKeyType keyType = mSkbTemplate.createKeyType(id,
-                                bg, hlBg);
+                                bg, hlBg,focusBg);
                         keyType.setColors(color, colorHl, colorBalloon);
                         if (!mSkbTemplate.addKeyType(keyType)) {
                             return null;

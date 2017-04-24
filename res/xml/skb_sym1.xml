@@ -69,13 +69,13 @@
     <key id="3"/>
   </row>
 
-  <row width="14.696%p" key_type="6">
+  <row width="14.696%p" key_type="1">
     <key code="-2" label="中 符" width="20%p" repeat="true">
       <toggle_state state_id="@string/toggle_en_sym1" label="英 符" code="-2"/>
     </key>
     <key code="-3" key_type="3" label="\?123"/>
-    <key code="62" key_type="7" width="30.608%p"/>
-    <key label="。" key_type="6" icon="@drawable/period_full_icon"
+    <key code="62" key_type="5" width="30.608%p"/>
+    <key label="。" key_type="0" icon="@drawable/period_full_icon"
       icon_popup="@drawable/period_full_popup_icon">
       <toggle_state state_id="@string/toggle_en_sym1" label="."
         icon="@drawable/period_icon" icon_popup="@drawable/period_popup_icon"/>

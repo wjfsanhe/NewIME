@@ -17,39 +17,39 @@
     android:title="@string/setting">
 
     <CheckBoxPreference
-        android:key="@string/setting_sound_key"
-        android:persistent="true"
-        android:summaryOff="@string/setting_disabled"
-        android:summaryOn="@string/setting_enabled"
-        android:title="@string/setting_sound_key_title" />
+      android:key="@string/setting_sound_key"
+      android:title="@string/setting_sound_key_title"
+      android:persistent="true"
+      android:summaryOn="@string/setting_enabled"
+      android:summaryOff="@string/setting_disabled"/>
 
     <CheckBoxPreference
-        android:key="@string/setting_vibrate_key"
-        android:persistent="false"
-        android:summaryOff="@string/setting_disabled"
-        android:summaryOn="@string/setting_enabled"
-        android:title="@string/setting_vibrate_title" />
+      android:key="@string/setting_vibrate_key"
+      android:title="@string/setting_vibrate_title"
+      android:persistent="false"
+      android:summaryOn="@string/setting_enabled"
+      android:summaryOff="@string/setting_disabled"/>
 
-    <CheckBoxPreference
-        android:key="@string/setting_prediction_key"
-        android:persistent="true"
-        android:summaryOff="@string/setting_disabled"
-        android:summaryOn="@string/setting_enabled"
-        android:title="@string/setting_prediction_title" />
-
+    <CheckBoxPreference 
+      android:key="@string/setting_prediction_key" 
+      android:title="@string/setting_prediction_title"
+      android:persistent="true"
+      android:summaryOn="@string/setting_enabled"
+      android:summaryOff="@string/setting_disabled"/>
+    
     <!-- Remove following entry to unbundle Google functionality -->
     <PreferenceScreen
-        android:key="@string/setting_advanced_key"
-        android:summary="@string/setting_others_summary"
-        android:title="@string/setting_others">
-        <intent android:action="com.android.inputmethod.pinyingoogleservice.SETTINGS" />
+      android:title="@string/setting_others"
+      android:summary="@string/setting_others_summary"
+      android:key="@string/setting_advanced_key">
+      <intent android:action="com.android.inputmethod.pinyingoogleservice.SETTINGS" />
     </PreferenceScreen>
 
-    <Preference
-        style="?android:preferenceInformationStyle"
-        android:key="@string/setting_switch_key"
-        android:persistent="false"
-        android:summary="@string/setting_switch_shift_space_title"
-        android:title="@string/setting_switch_title" />
-
+	<Preference
+      android:key="@string/setting_switch_key"
+      style="?android:preferenceInformationStyle"
+      android:title="@string/setting_switch_title"
+      android:persistent="false"
+      android:summary="@string/setting_switch_shift_space_title"/>
+     
 </PreferenceScreen>

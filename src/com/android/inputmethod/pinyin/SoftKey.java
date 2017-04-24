@@ -158,6 +158,9 @@ public class SoftKey {
         return mKeyType.mKeyHlBg;
     }
 
+    public Drawable getKeyFocusBg() {
+        return mKeyType.mKeyFocusBg;
+    }
     public int getColor() {
         return mKeyType.mColor;
     }
