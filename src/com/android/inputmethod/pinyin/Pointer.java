@@ -21,6 +21,7 @@ package com.android.inputmethod.pinyin;
 import android.os.Bundle;  
 import android.os.Handler;  
 import android.os.Message;  
+import android.os.SystemClock;  
 import android.annotation.SuppressLint;  
 import android.app.Activity;  
 import android.content.Context;  
@@ -32,11 +33,16 @@ import android.view.Menu;
 import android.view.MotionEvent;  
 import android.view.WindowManager;  
 import android.view.View;  
+import android.app.Instrumentation;  
 import android.widget.ImageView;
 
 
 public class Pointer {
     private final String TAG = "IMEPointer";
+    private final boolean DEBUG = false;
+    private final int MAX_MOVE_SPAN = 30;
+    private final int X_MARGIN = 1920;
+    private final int Y_MARGIN = 1080;
     private WindowManager wM;  
     private WindowManager.LayoutParams lP;  
     private static final int MSG_UDPATE_VIEW = 1;
@@ -44,7 +50,10 @@ public class Pointer {
     private Context mContext;  
     private int mAxisX,mAxisY;
     private boolean mEnable = false;
+    private boolean mMoveEnable = false;
     private int mXStep=25;
+    private int mMoveXStep=10;
+    private int mMoveYStep=10;
     private int mYStep=25;
     private UpdateThread mUpdateThread; 
     public  Pointer(Context context) {
@@ -59,7 +68,8 @@ public class Pointer {
         lP.width = WindowManager.LayoutParams.WRAP_CONTENT;  
         //need:<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />  
         //lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;  
-        lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;  
+        //lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;  
+        lP.type = WindowManager.LayoutParams.TYPE_TOAST;  
         lP.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN  
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE  
@@ -88,36 +98,57 @@ public class Pointer {
         if (keyCode != KeyEvent.KEYCODE_BUTTON_THUMBL) return false; 
         mEnable = !mEnable ;
         if (mEnable) {
-            Log.d(TAG,"enable Pointer");
+            if (DEBUG) Log.d(TAG,"enable Pointer");
             setup();
             wM.updateViewLayout(ivPointer, lP);
             //mUpdateThread = new UpdateThread();
             //mUpdateThread.start();
         } else {
-            Log.d(TAG,"disable Pointer");
+            if (DEBUG) Log.d(TAG,"disable Pointer");
             release();
         }
         return true;      
+    }
+    public boolean JoystickMove(float x, float y){
+        if (x == 0 && y == 0) {
+            if (DEBUG) Log.d(TAG,"reset...");
+            mMoveEnable = false;
+            mMoveXStep = 0;
+            mMoveYStep = 0;
+            return true ;
+        }
+        if (DEBUG) Log.d(TAG,"x-y(update): " + x + "-" + y );
+        if (mMoveEnable == true) {
+            mMoveXStep = (int)(x * MAX_MOVE_SPAN); 
+            mMoveYStep = (int)(y * MAX_MOVE_SPAN); 
+        } else {
+            mMoveEnable = true;
+            mMoveXStep = (int)(x * MAX_MOVE_SPAN); 
+            mMoveYStep = (int)(y * MAX_MOVE_SPAN); 
+            mUpdateThread = new UpdateThread();
+            mUpdateThread.start();
+        }
+        return true;    
     }
     public boolean move(int keyCode) {
         if(mEnable) {
             switch (keyCode){
                 case KeyEvent.KEYCODE_DPAD_UP:
-                Log.d(TAG,"up");
+                if (DEBUG) Log.d(TAG,"up");
                 //mAxisY -=mYStep;
                 lP.y -=mYStep;
                 break;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
-                Log.d(TAG,"down");
+                if (DEBUG) Log.d(TAG,"down");
                 lP.y +=mYStep;
                 break;
                 case KeyEvent.KEYCODE_DPAD_LEFT:
-                Log.d(TAG,"left");
+                if (DEBUG) Log.d(TAG,"left");
                 //mAxisY -=mYStep;
                 lP.x -=mXStep;
                 break;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
-                Log.d(TAG,"right");
+                if (DEBUG) Log.d(TAG,"right");
                 lP.x +=mXStep;
                 break;
                 default :
@@ -129,6 +160,11 @@ public class Pointer {
             return false;
         }
     }
+    public boolean touch(int keyCode){
+        if(keyCode != KeyEvent.KEYCODE_BUTTON_R2 || mEnable ==false) return false;
+        new TouchThread().start();
+        return true; 
+    }
     private void setAxis(int x, int y) {
         lP.x = x;
         lP.y = y;
@@ -136,16 +172,37 @@ public class Pointer {
     }
     class UpdateThread extends Thread {
         public void run () {
-            while (mEnable){
+            while (mMoveEnable){
                 try {
-                    Thread.sleep(10); 
+                    Thread.sleep(20); 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 Message m = new Message();
+                lP.x += mMoveXStep;
+                lP.y += mMoveYStep;
+                if (lP.x > X_MARGIN) lP.x = X_MARGIN;
+                if (lP.y > Y_MARGIN) lP.y = Y_MARGIN;
+                if (lP.x < -X_MARGIN) lP.x = -X_MARGIN;
+                if (lP.y < -Y_MARGIN) lP.y = -Y_MARGIN;
+  
+                if (DEBUG) Log.d(TAG,"x-y : " + lP.x + "-" + lP.y );
+                if (DEBUG) Log.d(TAG,"x-y(step) : " + mMoveXStep + "-" + mMoveYStep );
+                
                 m.what = MSG_UDPATE_VIEW;
                 mMessageHandler.sendMessage(m);
             }
+        }
+    }
+    class TouchThread extends Thread {
+        public void run () {
+            Instrumentation inst = new Instrumentation();
+            
+            if (DEBUG) Log.d(TAG,"touch on:" + lP.x + "," + lP.y);
+            inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_DOWN, lP.x + X_MARGIN, lP.y + Y_MARGIN, 0));
+            inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_UP, lP.x + X_MARGIN, lP.y + Y_MARGIN, 0));
         }
     }
     Handler mMessageHandler = new Handler() {
@@ -153,8 +210,7 @@ public class Pointer {
             switch (msg.what) {
                 case MSG_UDPATE_VIEW:
                 if (mEnable == true) {
-                    Log.d(TAG,"update cursor" + lP.x + "," + lP.y);
-                    setAxis(mAxisX,mAxisY);
+                    if(DEBUG) Log.d(TAG,"update cursor" + lP.x + "," + lP.y);
                     wM.updateViewLayout(ivPointer, lP);
                     
                 }else{

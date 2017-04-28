@@ -36,6 +36,7 @@ import android.view.LayoutInflater;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.InputDevice;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View.MeasureSpec;
@@ -237,9 +238,98 @@ public class PinyinIME extends InputMethodService {
         resetToIdleState(false);
     }
 
+
+    private float getCenteredAxis(MotionEvent event,
+        InputDevice device, int axis, int historyPos) {
+        final InputDevice.MotionRange range =
+            device.getMotionRange(axis, event.getSource());
+
+        // A joystick at rest does not always report an absolute position of
+        // (0,0). Use the getFlat() method to determine the range of values
+        // bounding the joystick axis center.
+        if (range != null) {
+            final float flat = range.getFlat();
+            final float value =
+                historyPos < 0 ? event.getAxisValue(axis):
+                event.getHistoricalAxisValue(axis, historyPos);
+
+            // Ignore axis values that are within the 'flat' region of the
+            // joystick axis center.
+            if (Math.abs(value) > flat) {
+                return value;
+            }
+        }
+        return 0;
+    }
+    private boolean processJoystickInput(MotionEvent event,
+        int historyPos) {
+
+        InputDevice mInputDevice = event.getDevice();
+
+        // Calculate the horizontal distance to move by
+        // using the input value from one of these physical controls:
+        // the left control stick, hat axis, or the right control stick.
+        float x ;
+        //discard invalid key
+        if ( getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos) != 0 ||
+                    getCenteredAxis(event, mInputDevice,MotionEvent.AXIS_HAT_X, historyPos) != 0) {
+             return false;
+        }
+
+        // Calculate the vertical distance to move by
+        // using the input value from one of these physical controls:
+        // the left control stick, hat switch, or the right control stick.
+        float y ;
+        //discard invalid key
+        if ( getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos) != 0 ||
+                    getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos) != 0) {
+            return false;
+        }
+        x = getCenteredAxis(event, mInputDevice,
+                MotionEvent.AXIS_Z, historyPos);
+        y = getCenteredAxis(event, mInputDevice,
+                MotionEvent.AXIS_RZ, historyPos);
+        // Log.d(TAG,"AxisX-AxisY : " + x + "-" + y);
+        //here we will process input event.
+        mPointer.JoystickMove(x,y);
+        return true ;
+        // Update the ship object based on the new x and y values
+    }
+    /**
+     * Override this to intercept generic motion events before they are
+     * processed by the application.
+     * If you return true, the application will not itself process the event.
+     * If you return false, the normal application processing will occur as if
+     * the IME had not seen the event at all.
+     */
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        //Log.d(TAG,"onGenericMotionEvent:" + event);
+        // Check that the event came from a game controller
+        if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) ==
+                InputDevice.SOURCE_JOYSTICK &&
+                event.getAction() == MotionEvent.ACTION_MOVE) {
+            // Process all historical movement samples in the batch
+            final int historySize = event.getHistorySize();
+
+            // Process the movements starting from the
+            // earliest historical position in the batch
+            boolean ret = false;
+            for (int i = 0; i < historySize; i++) {
+                // Process the event at historical position i
+                ret = processJoystickInput(event, i);
+            }
+
+            // Process the current movement sample in the batch (position -1)
+            processJoystickInput(event, -1);
+            if (ret == true) {
+                return true;
+            }
+        }
+            return super.onGenericMotionEvent(event);
+    }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.d(TAG, "onKeyDown be called," + keyCode + "\n" + event.toString());
 
         boolean ret;
 
@@ -248,10 +338,14 @@ public class PinyinIME extends InputMethodService {
             ret = mSkbContainer.notifyKeyDown(keyCode,event);
             if (ret) return true;
         } else { //for test.
-            ret = mPointer.move(keyCode);
+            /*ret = mPointer.move(keyCode);
             if (ret) {
                 return true;
-            }            
+            }*/         
+        }
+        ret = mPointer.touch(keyCode);
+        if (ret) {
+            return true;
         }
         //return true;
         return super.onKeyDown(keyCode, event);
@@ -259,7 +353,6 @@ public class PinyinIME extends InputMethodService {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Log.d(TAG, "onKeyUp be called");
         boolean ret;
 
         if (null != mSkbContainer && mSkbContainer.isShown()) {
