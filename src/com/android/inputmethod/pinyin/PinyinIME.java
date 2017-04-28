@@ -166,6 +166,8 @@ public class PinyinIME extends InputMethodService {
      */
     private EnglishInputProcessor mImEn;
 
+    private Pointer mPointer;
+   
     // receive ringer mode changes
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -197,6 +199,7 @@ public class PinyinIME extends InputMethodService {
 
         mEnvironment.onConfigurationChanged(getResources().getConfiguration(),
                 this);
+        mPointer = new Pointer(getBaseContext());
     }
 
     @Override
@@ -238,28 +241,17 @@ public class PinyinIME extends InputMethodService {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyDown be called," + keyCode + "\n" + event.toString());
 
+        boolean ret;
+
         if (null != mSkbContainer && mSkbContainer.isShown()) {
            //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
-          if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBR){
-            Log.d(TAG,"simulate KEYCODE_BACK down");
-            //simulateKeyEventDownUp(KeyEvent.KEYCODE_BACK);
-
-            keyCode = KeyEvent.KEYCODE_BACK ;
-            KeyEvent simEvent = new KeyEvent(event.getDownTime(),
-                                                    event.getEventTime(),
-                                                    event.getAction(),
-                                                    keyCode,
-                                                    event.getRepeatCount(),
-                                                    event.getMetaState(),
-                                                    event.getDeviceId(),
-                                                    event.getScanCode(),
-                                                    event.getFlags(),
-                                                    event.getSource());
-
-           return super.onKeyDown(keyCode, simEvent);
-          } else {
-            return mSkbContainer.notifyKeyDown(keyCode,event);
-          }
+            ret = mSkbContainer.notifyKeyDown(keyCode,event);
+            if (ret) return true;
+        } else { //for test.
+            ret = mPointer.move(keyCode);
+            if (ret) {
+                return true;
+            }            
         }
         //return true;
         return super.onKeyDown(keyCode, event);
@@ -267,32 +259,20 @@ public class PinyinIME extends InputMethodService {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-      Log.d(TAG, "onKeyUp be called");
+        Log.d(TAG, "onKeyUp be called");
+        boolean ret;
 
-      if (null != mSkbContainer && mSkbContainer.isShown()) {
-      //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
-            
-        if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBR){
-          Log.d(TAG,"simulate KEYCODE_BACK up");
-          //simulateKeyEventDownUp(KeyEvent.KEYCODE_BACK);
-
-          keyCode = KeyEvent.KEYCODE_BACK ;
-          KeyEvent simEvent = new KeyEvent(event.getDownTime(),
-                                                 event.getEventTime(),
-                                                 event.getAction(),
-                                                 keyCode,
-                                                 event.getRepeatCount(),
-                                                 event.getMetaState(),
-                                                 event.getDeviceId(),
-                                                 event.getScanCode(),
-                                                 event.getFlags(),
-                                                 event.getSource());
-          return super.onKeyUp(keyCode, simEvent);
-      } else {
-          return mSkbContainer.notifyKeyUp(keyCode,event);                                                             }
-      }
-      //return true;
-      return super.onKeyUp(keyCode, event);
+        if (null != mSkbContainer && mSkbContainer.isShown()) {
+        //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
+            ret = mSkbContainer.notifyKeyUp(keyCode,event);
+            if (ret) return true;
+        }
+        ret = mPointer.enablePointer(keyCode);
+        if (ret) {
+            return true;
+        }
+        //return true;
+        return super.onKeyUp(keyCode, event);
     }
 
     public boolean softKeyDown(int keyCode, KeyEvent event) {

@@ -279,7 +279,6 @@ public class SoftKeyboardView extends View {
             measuredHeight += mPaddingTop + mPaddingBottom;
         }
         setMeasuredDimension(measuredWidth, measuredHeight);
-        setSpace();
     }
 
     private void showBalloon(BalloonHint balloon, int balloonLocationToSkb[],
@@ -515,13 +514,16 @@ public class SoftKeyboardView extends View {
 
             return ((lastPoint.x != mFocusPoint.x) || (lastPoint.y != mFocusPoint.y)) ;              
     }
-    public void onDPADKey(int  keycode){
+    public boolean onDPADKey(int  keycode){
             boolean needRefresh=false;
             needRefresh = updateFocusPoint(keycode);
             
             if(needRefresh){
               Log.d(TAG,"!refresh");
               invalidate();
+              return true;
+            }else{
+              return false;
             }
     }
     public SoftKey onKeyRelease(int x, int y) {
@@ -730,14 +732,13 @@ public class SoftKeyboardView extends View {
 
     public boolean receiveKeyDown(int keyCode, KeyEvent event) {
                     Log.d(TAG, "onKeyDown be called," + keyCode + "\n" + event.toString());
-                    onDPADKey(keyCode);
-                    return true;
+                    return onDPADKey(keyCode);
     }
 
     public boolean receiveKeyUp(int keyCode, KeyEvent event) {
                     Log.d(TAG, "onKeyUp be called");
                     //onDPADKey(keyCode);
-                    return true;
+                    return false;
     }
     private void setSoftKeyHl(SoftKey softkey) {
         focusKey = softkey;

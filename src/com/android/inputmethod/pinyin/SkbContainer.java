@@ -215,7 +215,8 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
     public boolean notifyKeyDown(int keyCode, KeyEvent event) {
        if(null != mMajorView) {
             //here we process KEY_CENTER DOWN
-            if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBL || keyCode == KeyEvent.KEYCODE_BUTTON_A){
+            //if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBL || keyCode == KeyEvent.KEYCODE_BUTTON_A){
+            if(keyCode == KeyEvent.KEYCODE_BUTTON_A){
                 resetKeyPress(0);
 
                 mWaitForTouchUp = true;
@@ -241,7 +242,7 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
     public boolean notifyKeyUp(int keyCode, KeyEvent event) {
        if(null != mMajorView) {
             //here we process KEY_CENTER UP
-            if(keyCode == KeyEvent.KEYCODE_BUTTON_THUMBL || keyCode == KeyEvent.KEYCODE_BUTTON_A){
+            if(keyCode == KeyEvent.KEYCODE_BUTTON_A){
                 if (mDiscardEvent) {
                     resetKeyPress(0);
                     return false;
