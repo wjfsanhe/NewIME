@@ -18,31 +18,31 @@
  */
 package com.android.inputmethod.pinyin;
 
-import android.os.Bundle;  
-import android.os.Handler;  
-import android.os.Message;  
-import android.os.SystemClock;  
-import android.annotation.SuppressLint;  
-import android.app.Activity;  
-import android.content.Context;  
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.SystemClock;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.PixelFormat;  
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.util.Log;  
-import android.view.Menu;  
-import android.view.MotionEvent;  
-import android.view.WindowManager;  
+import android.util.Log;
+import android.view.Menu;
+import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.view.View;  
-import android.app.Instrumentation;  
+import android.app.Instrumentation;
 import android.widget.ImageView;
-
+import android.content.res.Configuration;
 
 public class Pointer {
     private final String TAG = "IMEPointer";
-    private final boolean DEBUG = false;
+    private final boolean DEBUG = true;
     private final int MAX_MOVE_SPAN = 30;
-    private final int X_MARGIN = 1920;
-    private final int Y_MARGIN = 1080;
+    private int X_MARGIN = 1920;
+    private int Y_MARGIN = 1080;
     private WindowManager wM;  
     private WindowManager.LayoutParams lP;  
     private static final int MSG_UDPATE_VIEW = 1;
@@ -55,9 +55,28 @@ public class Pointer {
     private int mMoveXStep=10;
     private int mMoveYStep=10;
     private int mYStep=25;
-    private UpdateThread mUpdateThread; 
+    private UpdateThread mUpdateThread;
+    private int mOrientationLand = Configuration.ORIENTATION_LANDSCAPE;
     public  Pointer(Context context) {
         mContext=context;
+    }
+    private void  updateScreenOrientation() {
+
+        Configuration mConfiguration = mContext.getResources().getConfiguration();
+        int ori = mConfiguration.orientation ;
+
+        if (ori != mOrientationLand) {
+            mOrientationLand = ori ;
+            if(ori == mConfiguration.ORIENTATION_LANDSCAPE){
+                if (DEBUG) Log.d(TAG,"Land scape :" + mConfiguration.screenWidthDp + "," + mConfiguration.screenHeightDp);
+                X_MARGIN = 1920;
+                Y_MARGIN = 1080;
+            }else if(ori == mConfiguration.ORIENTATION_PORTRAIT){
+                if (DEBUG) Log.d(TAG,"portrait scape :" + mConfiguration.screenWidthDp + "," + mConfiguration.screenHeightDp);
+                X_MARGIN = 1080;
+                Y_MARGIN = 1920;
+            }
+        }
     }
     public void setup(){
         wM = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);  
@@ -110,6 +129,7 @@ public class Pointer {
         return true;      
     }
     public boolean JoystickMove(float x, float y){
+        updateScreenOrientation() ;
         if (x == 0 && y == 0) {
             if (DEBUG) Log.d(TAG,"reset...");
             mMoveEnable = false;
