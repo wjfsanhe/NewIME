@@ -168,6 +168,7 @@ public class PinyinIME extends InputMethodService {
     private EnglishInputProcessor mImEn;
 
     private Pointer mPointer;
+    private ControllerAdapter mController;
    
     // receive ringer mode changes
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -201,6 +202,8 @@ public class PinyinIME extends InputMethodService {
         mEnvironment.onConfigurationChanged(getResources().getConfiguration(),
                 this);
         mPointer = new Pointer(getBaseContext());
+        mController = new ControllerAdapter(getBaseContext());
+        mController.StartAdapter();
     }
 
     @Override
@@ -210,6 +213,9 @@ public class PinyinIME extends InputMethodService {
         }
         unbindService(mPinyinDecoderServiceConnection);
         Settings.releaseInstance();
+        if ( null != mController) {
+            mController.StopAdapter();
+        }
         super.onDestroy();
     }
 
