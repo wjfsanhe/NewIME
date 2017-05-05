@@ -36,6 +36,7 @@ import android.view.View;
 import android.app.Instrumentation;
 import android.widget.ImageView;
 import android.content.res.Configuration;
+import android.content.pm.ActivityInfo;
 
 public class Pointer {
     private final String TAG = "IMEPointer";
@@ -55,6 +56,8 @@ public class Pointer {
     private int mMoveXStep=10;
     private int mMoveYStep=10;
     private int mYStep=25;
+    private int lastPointerX = 0;
+    private int lastPointerY = 0;
     private UpdateThread mUpdateThread;
     private int mOrientationLand = Configuration.ORIENTATION_LANDSCAPE;
     public  Pointer(Context context) {
@@ -94,9 +97,11 @@ public class Pointer {
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE  
                 | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
         lP.format = PixelFormat.TRANSLUCENT;  
+        //lP.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+
         //notice ,x=y=0; means center of window;  
-        lP.x = 0;  
-        lP.y = 0;  
+        lP.x = lastPointerX;  
+        lP.y = lastPointerY;  
         //Pointer image;  
         //ivPointer = new ImageView(this.getBaseContext());  
         //use Application context ,not active context.
@@ -126,9 +131,10 @@ public class Pointer {
             if (DEBUG) Log.d(TAG,"disable Pointer");
             release();
         }
-        return true;      
+        return false;      
     }
     public boolean JoystickMove(float x, float y){
+        if (!mEnable) return false;
         updateScreenOrientation() ;
         if (x == 0 && y == 0) {
             if (DEBUG) Log.d(TAG,"reset...");
@@ -181,7 +187,7 @@ public class Pointer {
         }
     }
     public boolean touch(int keyCode){
-        if(keyCode != KeyEvent.KEYCODE_BUTTON_R2 || mEnable ==false) return false;
+        if(keyCode != KeyEvent.KEYCODE_BUTTON_R1 || mEnable ==false) return false;
         new TouchThread().start();
         return true; 
     }
@@ -208,7 +214,8 @@ public class Pointer {
   
                 if (DEBUG) Log.d(TAG,"x-y : " + lP.x + "-" + lP.y );
                 if (DEBUG) Log.d(TAG,"x-y(step) : " + mMoveXStep + "-" + mMoveYStep );
-                
+                lastPointerX = lP.x;
+                lastPointerY = lP.y;
                 m.what = MSG_UDPATE_VIEW;
                 mMessageHandler.sendMessage(m);
             }

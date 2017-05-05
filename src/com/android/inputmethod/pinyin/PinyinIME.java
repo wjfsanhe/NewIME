@@ -168,6 +168,7 @@ public class PinyinIME extends InputMethodService {
     private EnglishInputProcessor mImEn;
 
     private Pointer mPointer;
+    private OrientationLocker mOriLocker;
     private ControllerAdapter mController;
    
     // receive ringer mode changes
@@ -202,6 +203,8 @@ public class PinyinIME extends InputMethodService {
         mEnvironment.onConfigurationChanged(getResources().getConfiguration(),
                 this);
         mPointer = new Pointer(getBaseContext());
+        mOriLocker = new OrientationLocker(getBaseContext());
+        mOriLocker.enable();
         mController = new ControllerAdapter(getBaseContext());
         mController.StartAdapter();
     }
@@ -213,8 +216,11 @@ public class PinyinIME extends InputMethodService {
         }
         unbindService(mPinyinDecoderServiceConnection);
         Settings.releaseInstance();
-        if ( null != mController) {
+        if (null != mController) {
             mController.StopAdapter();
+        }
+        if (null != mOriLocker) {
+            mOriLocker.disable();
         }
         super.onDestroy();
     }
