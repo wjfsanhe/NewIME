@@ -89,9 +89,10 @@ public class Pointer {
         lP.height = WindowManager.LayoutParams.WRAP_CONTENT;  
         lP.width = WindowManager.LayoutParams.WRAP_CONTENT;  
         //need:<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />  
-        //lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;  
+        lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;  
         //lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;  
-        lP.type = WindowManager.LayoutParams.TYPE_TOAST;  
+        //lP.type = WindowManager.LayoutParams.TYPE_TOAST;  
+        //lP.type = WindowManager.LayoutParams.TYPE_INPUT_METHOD;  
         lP.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN  
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE  
