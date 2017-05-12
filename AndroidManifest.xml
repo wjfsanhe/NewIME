@@ -50,6 +50,10 @@
                     <action android:name="android.intent.action.MAIN"/>
                 </intent-filter>
             </activity>
-
+            <!-- receiver android:name=".IMEBroadcastReceiver">
+                <intent-filter>
+                <action android:name="com.iqiyi.broadcast.syncPointer" />
+                </intent-filter>
+            </receiver -->
         </application>
 </manifest>

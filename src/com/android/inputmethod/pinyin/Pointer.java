@@ -25,14 +25,14 @@ import android.os.SystemClock;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.PixelFormat;  
+import android.graphics.PixelFormat;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.WindowManager;
-import android.view.View;  
+import android.view.View;
 import android.app.Instrumentation;
 import android.widget.ImageView;
 import android.content.res.Configuration;
@@ -44,13 +44,14 @@ public class Pointer {
     private final int MAX_MOVE_SPAN = 30;
     private int X_MARGIN = 1920;
     private int Y_MARGIN = 1080;
-    private WindowManager wM;  
-    private WindowManager.LayoutParams lP;  
+    private WindowManager wM;
+    private WindowManager.LayoutParams lP;
     private static final int MSG_UDPATE_VIEW = 1;
     private ImageView ivPointer;
-    private Context mContext;  
+    private Context mContext;
     private int mAxisX,mAxisY;
     private boolean mEnable = false;
+    private boolean mReleased = false;
     private boolean mMoveEnable = false;
     private int mXStep=25;
     private int mMoveXStep=10;
@@ -82,46 +83,51 @@ public class Pointer {
         }
     }
     public void setup(){
-        wM = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);  
-        //top view for Pointer;  
-        //copy from frameworks/base/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java  
-        lP = new WindowManager.LayoutParams();  
-        lP.height = WindowManager.LayoutParams.WRAP_CONTENT;  
-        lP.width = WindowManager.LayoutParams.WRAP_CONTENT;  
-        //need:<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />  
-        lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;  
-        //lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;  
-        //lP.type = WindowManager.LayoutParams.TYPE_TOAST;  
-        //lP.type = WindowManager.LayoutParams.TYPE_INPUT_METHOD;  
-        lP.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN  
-                | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  
-                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE  
+        wM = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
+        //top view for Pointer;
+        //copy from frameworks/base/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
+        lP = new WindowManager.LayoutParams();
+        lP.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        lP.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        //need:<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+        lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
+        //lP.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        //lP.type = WindowManager.LayoutParams.TYPE_TOAST;
+        //lP.type = WindowManager.LayoutParams.TYPE_INPUT_METHOD;
+        lP.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN
+                | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-        lP.format = PixelFormat.TRANSLUCENT;  
+        lP.format = PixelFormat.TRANSLUCENT;
         //lP.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 
-        //notice ,x=y=0; means center of window;  
-        lP.x = lastPointerX;  
-        lP.y = lastPointerY;  
-        //Pointer image;  
-        //ivPointer = new ImageView(this.getBaseContext());  
+        //notice ,x=y=0; means center of window;
+        lP.x = lastPointerX;
+        lP.y = lastPointerY;
+        //Pointer image;
+        //ivPointer = new ImageView(this.getBaseContext());
         //use Application context ,not active context.
-        ivPointer = new ImageView(mContext);  
-        ivPointer.setImageResource(R.drawable.cursor);  
-        wM.addView(ivPointer, lP);  
+        ivPointer = new ImageView(mContext);
+        ivPointer.setImageResource(R.drawable.cursor);
+        wM.addView(ivPointer, lP);
         //wM.updateViewLayout(ivPointer, lP);
         //enablePointer(true);
-        
+        mReleased = false;
     }
     public void release(){
-        if(null != wM){
+        if(null != wM && mReleased == false){
             wM.removeView(ivPointer);
+            mReleased = true;
         }
         mEnable = false;
     }
-    public boolean enablePointer(int keyCode) {
-        if (keyCode != KeyEvent.KEYCODE_BUTTON_THUMBL) return false; 
-        mEnable = !mEnable ;
+    public boolean enablePointer(int keyCode, boolean forceSync) {
+        if (keyCode != KeyEvent.KEYCODE_BUTTON_THUMBL) return false;
+        if (forceSync) {
+            mEnable = false;
+        } else {
+            mEnable = !mEnable ;
+        }
         if (mEnable) {
             if (DEBUG) Log.d(TAG,"enable Pointer");
             setup();
@@ -132,7 +138,7 @@ public class Pointer {
             if (DEBUG) Log.d(TAG,"disable Pointer");
             release();
         }
-        return false;      
+        return false;
     }
     public boolean JoystickMove(float x, float y){
         if (!mEnable) return false;
@@ -146,16 +152,16 @@ public class Pointer {
         }
         if (DEBUG) Log.d(TAG,"x-y(update): " + x + "-" + y );
         if (mMoveEnable == true) {
-            mMoveXStep = (int)(x * MAX_MOVE_SPAN); 
-            mMoveYStep = (int)(y * MAX_MOVE_SPAN); 
+            mMoveXStep = (int)(x * MAX_MOVE_SPAN);
+            mMoveYStep = (int)(y * MAX_MOVE_SPAN);
         } else {
             mMoveEnable = true;
-            mMoveXStep = (int)(x * MAX_MOVE_SPAN); 
-            mMoveYStep = (int)(y * MAX_MOVE_SPAN); 
+            mMoveXStep = (int)(x * MAX_MOVE_SPAN);
+            mMoveYStep = (int)(y * MAX_MOVE_SPAN);
             mUpdateThread = new UpdateThread();
             mUpdateThread.start();
         }
-        return true;    
+        return true;
     }
     public boolean move(int keyCode) {
         if(mEnable) {
@@ -181,7 +187,7 @@ public class Pointer {
                 default :
                 return false;
             }
-            wM.updateViewLayout(ivPointer, lP); 
+            wM.updateViewLayout(ivPointer, lP);
             return true;
         } else {
             return false;
@@ -190,7 +196,7 @@ public class Pointer {
     public boolean touch(int keyCode){
         if(keyCode != KeyEvent.KEYCODE_BUTTON_R1 || mEnable ==false) return false;
         new TouchThread().start();
-        return true; 
+        return true;
     }
     private void setAxis(int x, int y) {
         lP.x = x;
@@ -201,7 +207,7 @@ public class Pointer {
         public void run () {
             while (mMoveEnable){
                 try {
-                    Thread.sleep(20); 
+                    Thread.sleep(20);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -212,7 +218,7 @@ public class Pointer {
                 if (lP.y > Y_MARGIN) lP.y = Y_MARGIN;
                 if (lP.x < -X_MARGIN) lP.x = -X_MARGIN;
                 if (lP.y < -Y_MARGIN) lP.y = -Y_MARGIN;
-  
+
                 if (DEBUG) Log.d(TAG,"x-y : " + lP.x + "-" + lP.y );
                 if (DEBUG) Log.d(TAG,"x-y(step) : " + mMoveXStep + "-" + mMoveYStep );
                 lastPointerX = lP.x;
@@ -225,7 +231,7 @@ public class Pointer {
     class TouchThread extends Thread {
         public void run () {
             Instrumentation inst = new Instrumentation();
-            
+
             if (DEBUG) Log.d(TAG,"touch on:" + lP.x + "," + lP.y);
             inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),SystemClock.uptimeMillis(),
                 MotionEvent.ACTION_DOWN, lP.x + X_MARGIN, lP.y + Y_MARGIN, 0));
@@ -240,7 +246,7 @@ public class Pointer {
                 if (mEnable == true) {
                     if(DEBUG) Log.d(TAG,"update cursor" + lP.x + "," + lP.y);
                     wM.updateViewLayout(ivPointer, lP);
-                    
+
                 }else{
                     /*lP.x=4000;
                     lP.y=4000;
@@ -250,6 +256,6 @@ public class Pointer {
             }
             super.handleMessage(msg);
         }
-    }; 
+    };
 
 }

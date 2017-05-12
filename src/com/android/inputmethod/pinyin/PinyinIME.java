@@ -22,6 +22,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
@@ -47,6 +48,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.content.BroadcastReceiver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -170,15 +172,18 @@ public class PinyinIME extends InputMethodService {
     private Pointer mPointer;
     private OrientationLocker mOriLocker;
     private ControllerAdapter mController;
-   
-    // receive ringer mode changes
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            SoundManager.getInstance(context).updateRingerMode();
-        }
-    };
+    private PointerReceiver  mReceiver;
+    private boolean debugPointer = true;
 
+    private class PointerReceiver extends IMEBroadcastReceiver{
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(TAG,"receive broadcast" + intent);
+                if (null != mPointer) {
+                   mPointer.enablePointer(KeyEvent.KEYCODE_BUTTON_THUMBL,true);
+                }
+            }
+    }
     @Override
     public void onCreate() {
         mEnvironment = Environment.getInstance();
@@ -207,6 +212,10 @@ public class PinyinIME extends InputMethodService {
         mOriLocker.enable();
         mController = new ControllerAdapter(getBaseContext());
         mController.StartAdapter();
+        mReceiver = new PointerReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.iqiyi.broadcast.syncPointer");
+        registerReceiver(mReceiver,filter);
     }
 
     @Override
@@ -215,6 +224,7 @@ public class PinyinIME extends InputMethodService {
             Log.d(TAG, "onDestroy.");
         }
         unbindService(mPinyinDecoderServiceConnection);
+        unregisterReceiver(mReceiver);
         Settings.releaseInstance();
         if (null != mController) {
             mController.StopAdapter();
@@ -353,7 +363,7 @@ public class PinyinIME extends InputMethodService {
             /*ret = mPointer.move(keyCode);
             if (ret) {
                 return true;
-            }*/         
+            }*/
         }
         ret = mPointer.touch(keyCode);
         if (ret) {
@@ -372,9 +382,18 @@ public class PinyinIME extends InputMethodService {
             ret = mSkbContainer.notifyKeyUp(keyCode,event);
             if (ret) return true;
         }
-        ret = mPointer.enablePointer(keyCode);
+        ret = mPointer.enablePointer(keyCode,false);
         if (ret) {
             return true;
+        }
+        if (debugPointer) {
+                if (keyCode == KeyEvent.KEYCODE_BUTTON_THUMBR){
+                        Intent intent = new Intent();
+                        intent.setAction("com.iqiyi.broadcast.syncPointer");
+                        intent.putExtra("name","xyz");
+                        Log.d(TAG,"sendBroadcast");
+                        sendBroadcast(intent);
+                }
         }
         //return true;
         return super.onKeyUp(keyCode, event);
