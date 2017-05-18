@@ -350,11 +350,28 @@ public class PinyinIME extends InputMethodService {
         }
             return super.onGenericMotionEvent(event);
     }
+
+    private int KEYCODE_DPAD_CENTER_THUMBL_scancode =0;
+    private boolean hookKey(int keyCode ,KeyEvent event) {
+        //we hook left center:
+        //store reference scancode.
+        Log.d(TAG, event.toString());
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_THUMBL) {
+            KEYCODE_DPAD_CENTER_THUMBL_scancode = event.getScanCode();
+        }
+        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+            if (event.getScanCode() == KEYCODE_DPAD_CENTER_THUMBL_scancode){
+                return true;
+            }
+        }
+        return false;
+    }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
         boolean ret;
 
+        if (hookKey(keyCode,event)) return true;
         if (null != mSkbContainer && mSkbContainer.isShown()) {
            //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
             ret = mSkbContainer.notifyKeyDown(keyCode,event);
@@ -377,6 +394,7 @@ public class PinyinIME extends InputMethodService {
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         boolean ret;
 
+        if (hookKey(keyCode,event)) return true;
         if (null != mSkbContainer && mSkbContainer.isShown()) {
         //detect KeyEvent.KEYCODE_BUTTON_THUMBR ; simulate KEYCODE_BACK
             ret = mSkbContainer.notifyKeyUp(keyCode,event);
