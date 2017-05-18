@@ -382,7 +382,7 @@ public class PinyinIME extends InputMethodService {
                 return true;
             }*/
         }
-        ret = mPointer.touch(keyCode);
+        ret = mPointer.touchDown(keyCode);
         if (ret) {
             return true;
         }
@@ -400,7 +400,7 @@ public class PinyinIME extends InputMethodService {
             ret = mSkbContainer.notifyKeyUp(keyCode,event);
             if (ret) return true;
         }
-        ret = mPointer.enablePointer(keyCode,false);
+        ret = mPointer.enablePointer(keyCode,false) || mPointer.touchUp(keyCode);
         if (ret) {
             return true;
         }

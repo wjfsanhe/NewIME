@@ -42,8 +42,10 @@ public class Pointer {
     private final String TAG = "IMEPointer";
     private final boolean DEBUG = true;
     private final int MAX_MOVE_SPAN = 30;
-    private int X_MARGIN = 1920;
-    private int Y_MARGIN = 1080;
+    private final int DEFAULT_X_MARGIN = 1920;
+    private final int DEFAULT_Y_MARGIN = 1080;
+    private int X_MARGIN = DEFAULT_X_MARGIN;
+    private int Y_MARGIN = DEFAULT_Y_MARGIN;
     private WindowManager wM;
     private WindowManager.LayoutParams lP;
     private static final int MSG_UDPATE_VIEW = 1;
@@ -73,12 +75,12 @@ public class Pointer {
             mOrientationLand = ori ;
             if(ori == mConfiguration.ORIENTATION_LANDSCAPE){
                 if (DEBUG) Log.d(TAG,"Land scape :" + mConfiguration.screenWidthDp + "," + mConfiguration.screenHeightDp);
-                X_MARGIN = 1920;
-                Y_MARGIN = 1080;
+                X_MARGIN = DEFAULT_X_MARGIN;
+                Y_MARGIN = DEFAULT_Y_MARGIN;
             }else if(ori == mConfiguration.ORIENTATION_PORTRAIT){
                 if (DEBUG) Log.d(TAG,"portrait scape :" + mConfiguration.screenWidthDp + "," + mConfiguration.screenHeightDp);
-                X_MARGIN = 1080;
-                Y_MARGIN = 1920;
+                X_MARGIN = DEFAULT_Y_MARGIN;
+                Y_MARGIN = DEFAULT_X_MARGIN;
             }
         }
     }
@@ -97,7 +99,8 @@ public class Pointer {
         lP.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                //| WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
         lP.format = PixelFormat.TRANSLUCENT;
         //lP.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 
@@ -193,9 +196,14 @@ public class Pointer {
             return false;
         }
     }
-    public boolean touch(int keyCode){
+    public boolean touchDown(int keyCode){
         if(keyCode != KeyEvent.KEYCODE_BUTTON_R1 || mEnable ==false) return false;
-        new TouchThread().start();
+        new TouchDownThread().start();
+        return true;
+    }
+    public boolean touchUp(int keyCode){
+        if(keyCode != KeyEvent.KEYCODE_BUTTON_R1 || mEnable ==false) return false;
+        new TouchUpThread().start();
         return true;
     }
     private void setAxis(int x, int y) {
@@ -225,16 +233,29 @@ public class Pointer {
                 lastPointerY = lP.y;
                 m.what = MSG_UDPATE_VIEW;
                 mMessageHandler.sendMessage(m);
+                
+                Instrumentation inst = new Instrumentation();
+
+                if (DEBUG) Log.d(TAG,"touchMove on :" + lP.x + "," + lP.y);
+                inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),SystemClock.uptimeMillis(),
+                                        MotionEvent.ACTION_MOVE, lP.x + X_MARGIN, lP.y + Y_MARGIN, 0));
             }
         }
     }
-    class TouchThread extends Thread {
+    class TouchDownThread extends Thread {
         public void run () {
             Instrumentation inst = new Instrumentation();
 
-            if (DEBUG) Log.d(TAG,"touch on:" + lP.x + "," + lP.y);
+            if (DEBUG) Log.d(TAG,"touchDown on :" + lP.x + "," + lP.y);
             inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),SystemClock.uptimeMillis(),
                 MotionEvent.ACTION_DOWN, lP.x + X_MARGIN, lP.y + Y_MARGIN, 0));
+        }
+    }
+    class TouchUpThread extends Thread {
+        public void run () {
+            Instrumentation inst = new Instrumentation();
+
+            if (DEBUG) Log.d(TAG,"touchUp on:" + lP.x + "," + lP.y);
             inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),SystemClock.uptimeMillis(),
                 MotionEvent.ACTION_UP, lP.x + X_MARGIN, lP.y + Y_MARGIN, 0));
         }
