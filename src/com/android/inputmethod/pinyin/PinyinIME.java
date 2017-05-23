@@ -313,8 +313,7 @@ public class PinyinIME extends InputMethodService {
                 MotionEvent.AXIS_RZ, historyPos);
         // Log.d(TAG,"AxisX-AxisY : " + x + "-" + y);
         //here we will process input event.
-        mPointer.JoystickMove(x,y);
-        return true ;
+        return mPointer.JoystickMove(x,y);
         // Update the ship object based on the new x and y values
     }
     /**
